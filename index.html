@@ -1563,7 +1563,7 @@ function renderLote(prodId, campoId, loteId){
               ${ap.productos.map(p=>`<tr>
                 <td>
                   <div style="font-weight:500">${p.nombre}</div>
-                  ${(()=>{ const pb=DB.productosBase.find(x=>x.nombre===p.nombre); const pa=pb?.pa||''; return pa?`<div style="font-size:11px;color:var(--text-3);margin-top:1px">${pa}</div>`:''; })()}
+                  ${(()=>{ const pb=DB.productosBase.find(x=>x.nombre===p.nombre)||DB.vademecum?.find(x=>x.nombre===p.nombre)||DB.vademecum?.find(x=>x.nombre===p.nombre); const pa=pb?.pa||''; return pa?`<div style="font-size:11px;color:var(--text-3);margin-top:1px">${pa}</div>`:''; })()}
                 </td>
                 <td><span class="pill ${pillCls[p.tipo]||'pill-otro'}">${p.tipo}</span></td>
                 <td>${fmtNum(p.dosis)}</td>
@@ -2590,7 +2590,7 @@ function openPreview(aplId){
   const pillBg    = {Herbicida:'rgba(30,132,73,0.12)',Fungicida:'rgba(29,111,165,0.12)',Insecticida:'rgba(201,122,26,0.12)',Coadyuvante:'rgba(124,58,237,0.10)',Otro:'#f0f2f5'};
 
   const rows = ap.productos.map(p=>{
-    const pb = DB.productosBase.find(x=>x.nombre===p.nombre);
+    const pb = DB.productosBase.find(x=>x.nombre===p.nombre)||DB.vademecum?.find(x=>x.nombre===p.nombre);
     return `<tr>
       <td style="padding:9px 10px;border-bottom:1px solid #f0f2f5">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -2687,7 +2687,7 @@ function exportAplicJPG(aplId){
   const pillBg = {Herbicida:'rgba(30,132,73,0.12)',Fungicida:'rgba(29,111,165,0.12)',Insecticida:'rgba(201,122,26,0.12)',Otro:'#f0f2f5'};
 
   const rows = ap.productos.map(p=>{
-    const pb = DB.productosBase.find(x=>x.nombre===p.nombre);
+    const pb = DB.productosBase.find(x=>x.nombre===p.nombre)||DB.vademecum?.find(x=>x.nombre===p.nombre);
     return `<tr>
       <td style="padding:8px 10px;border-bottom:1px solid #f0f2f5">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:${pb?.pa?'2px':'0'}">
@@ -2834,7 +2834,7 @@ function buildAplicHTML(ap, prod, lote, forJPG, mapDataUrl=null){
     <table>
       <thead><tr><th>Producto</th><th>Tipo</th><th>Dosis</th><th>Unidad</th><th>Total (${lote.ha} ha)</th></tr></thead>
       <tbody>
-        ${ap.productos.map(p=>{ const pb=DB.productosBase.find(x=>x.nombre===p.nombre); return `<tr><td><div style="font-weight:600">${p.nombre}</div>${pb?.pa?`<div style="font-size:11px;color:#888;margin-top:2px">${pb.pa}</div>`:''}</td><td>${p.tipo}</td><td>${fmtNum(p.dosis)}</td><td>${p.unidad}</td><td class="total">${fmtTotal(p.dosis,lote.ha,p.unidad)}</td></tr>`; }).join('')}
+        ${ap.productos.map(p=>{ const pb=DB.productosBase.find(x=>x.nombre===p.nombre)||DB.vademecum?.find(x=>x.nombre===p.nombre); return `<tr><td><div style="font-weight:600">${p.nombre}</div>${pb?.pa?`<div style="font-size:11px;color:#888;margin-top:2px">${pb.pa}</div>`:''}</td><td>${p.tipo}</td><td>${fmtNum(p.dosis)}</td><td>${p.unidad}</td><td class="total">${fmtTotal(p.dosis,lote.ha,p.unidad)}</td></tr>`; }).join('')}
       </tbody>
     </table>
     ${ap.obs?`<div class="obs"><strong>Obs:</strong> ${ap.obs}</div>`:''}
