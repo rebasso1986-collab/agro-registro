@@ -1895,12 +1895,14 @@ function renderProductores(){
 // ── Screen: Productos base ─────────────────────────────────────────────────────
 function renderProductosBase(){
   const q = (window._pbSearch||'').toLowerCase();
+  // Combinar vademécum + productos del usuario
+  const todos = [...(DB.vademecum||[]), ...(DB.productosBase||[])];
   const lista = q
-    ? DB.productosBase.filter(p=>
+    ? todos.filter(p=>
         p.nombre.toLowerCase().includes(q) ||
         (p.pa||'').toLowerCase().includes(q) ||
         (p.tipo||'').toLowerCase().includes(q))
-    : DB.productosBase;
+    : todos;
 
   let html = `
     <div class="page-header">
