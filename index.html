@@ -276,6 +276,8 @@ textarea { resize: vertical; min-height: 56px; }
   .mob-topbar-logo-icon { width: 26px; height: 26px; background: var(--blue); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; }
   .mob-hamburger { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; color: var(--text-2); font-size: 20px; cursor: pointer; border-radius: var(--r-md); }
   .mob-hamburger:active { background: var(--bg-surface); }
+.mob-camp-btn { display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--bg-surface);border:1px solid var(--border-2);border-radius:var(--r-md);color:var(--text-1);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-sans); }
+.mob-camp-btn:active { background: var(--border-2); }
 
   /* Sidebar: oculto por defecto, desliza desde izquierda */
   .sidebar {
@@ -374,9 +376,26 @@ textarea { resize: vertical; min-height: 56px; }
     <div class="mob-topbar-logo-icon"><i class="ti ti-leaf" aria-hidden="true"></i></div>
     Agro Registro
   </div>
-  <button class="mob-hamburger" onclick="toggleMobSidebar()" aria-label="Menú">
-    <i class="ti ti-menu-2" aria-hidden="true"></i>
-  </button>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="mob-camp-btn" id="mob-camp-btn" onclick="toggleMobCampMenu()" title="Cambiar campaña">
+      <i class="ti ti-calendar" aria-hidden="true"></i>
+      <span id="mob-camp-label">...</span>
+      <i class="ti ti-chevron-down" style="font-size:11px" aria-hidden="true"></i>
+    </button>
+    <button class="mob-hamburger" onclick="toggleMobSidebar()" aria-label="Menú">
+      <i class="ti ti-menu-2" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Mobile campaign dropdown -->
+<div id="mob-camp-menu" style="display:none;position:fixed;top:52px;right:10px;background:var(--bg-card);border:1px solid var(--border-2);border-radius:var(--r-lg);box-shadow:var(--shadow-lg,0 8px 24px rgba(0,0,0,.15));z-index:200;min-width:160px;padding:6px 0">
+  <div id="mob-camp-list"></div>
+  <div style="border-top:1px solid var(--border-2);margin-top:4px;padding-top:4px">
+    <button onclick="addCampania();closeMobCampMenu()" style="width:100%;text-align:left;padding:8px 14px;background:none;border:none;color:var(--blue);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <i class="ti ti-plus" style="font-size:14px" aria-hidden="true"></i> Nueva campaña
+    </button>
+  </div>
 </div>
 
 <!-- Mobile sidebar overlay -->
@@ -723,6 +742,7 @@ function addCampania(){
   populateCampSelect();
   document.getElementById('sel-camp').value = CAMP;
   document.getElementById('camp-sub').textContent = 'Campaña ' + CAMP;
+  if(typeof updateMobCampLabel === 'function') updateMobCampLabel();
   render();
 }
 
@@ -1249,6 +1269,7 @@ function goNuevaAplic(pid,cid,lid){ rowCount=0; goScreen('nueva-aplic', {prodId:
 function changeCamp(){
   CAMP = document.getElementById('sel-camp').value;
   document.getElementById('camp-sub').textContent = 'Campaña ' + CAMP;
+  updateMobCampLabel();
   render();
 }
 
@@ -3032,6 +3053,48 @@ function mobForceSyncFromSheets(){
     else if(ok===false) toast('⚠ La nube está vacía');
     else          toast('⚠ Sin conexión: ' + val);
   });
+}
+
+// ── Mobile campaign selector ───────────────────────────────────────────────────
+function updateMobCampLabel(){
+  const lbl = document.getElementById('mob-camp-label');
+  if(lbl) lbl.textContent = CAMP || '...';
+}
+function toggleMobCampMenu(){
+  const menu = document.getElementById('mob-camp-menu');
+  const list = document.getElementById('mob-camp-list');
+  if(!menu) return;
+  if(menu.style.display === 'none'){
+    // Build list
+    const camps = DB.campanias && DB.campanias.length ? DB.campanias : [CAMP];
+    list.innerHTML = camps.map(c => `
+      <button onclick="selectMobCamp('${c}')" style="width:100%;text-align:left;padding:8px 14px;background:${c===CAMP?'var(--blue)':'none'};color:${c===CAMP?'#fff':'var(--text-1)'};border:none;font-size:13px;cursor:pointer;font-family:var(--font-sans);border-radius:0">
+        ${c}
+      </button>`).join('');
+    menu.style.display = 'block';
+    // Close on outside click
+    setTimeout(()=>{ document.addEventListener('click', closeMobCampOnOutside); }, 50);
+  } else {
+    closeMobCampMenu();
+  }
+}
+function closeMobCampOnOutside(e){
+  const menu = document.getElementById('mob-camp-menu');
+  const btn  = document.getElementById('mob-camp-btn');
+  if(menu && !menu.contains(e.target) && !btn.contains(e.target)){
+    closeMobCampMenu();
+  }
+}
+function closeMobCampMenu(){
+  const menu = document.getElementById('mob-camp-menu');
+  if(menu) menu.style.display = 'none';
+  document.removeEventListener('click', closeMobCampOnOutside);
+}
+function selectMobCamp(c){
+  document.getElementById('sel-camp').value = c;
+  changeCamp();
+  updateMobCampLabel();
+  closeMobCampMenu();
 }
 
 // ── Mobile nav helpers ─────────────────────────────────────────────────────────
