@@ -2969,6 +2969,7 @@ function loadLocal(){
       }
       populateCampSelect();
       render();
+      updateMobCampLabel();
       _appReady = true; // habilitar guardado recién acá
     })
     .catch(() => {
@@ -2976,6 +2977,7 @@ function loadLocal(){
       _loadFromLocal();
       populateCampSelect();
       render();
+      updateMobCampLabel();
       _appReady = true; // habilitar guardado recién acá
     });
 }
